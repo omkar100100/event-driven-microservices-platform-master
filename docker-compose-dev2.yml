@@ -1,0 +1,40 @@
+version: '2'
+
+networks:
+  prodnetwork:
+    driver: bridge
+
+volumes:
+  registry-stuff:
+    driver: local
+
+services:
+ 
+
+  nexus:
+    build: ./nexus
+    ports:
+      - "18081:8081"
+
+  jenkins:
+    build: ./jenkins
+    ports:
+      - "18080:8080"
+    links:
+      - nexus:nexus
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+    environment:
+      EDMP_CONFIG_URL: "https://github.com/omkar100100/edmp-project-configuration/blob/master/edmp-project-configuration.json"
+
+  registry:
+    image: registry
+    environment:
+      - STORAGE_PATH=/registry
+    volumes:
+      - registry-stuff:/registry
+    ports:
+      - "5000:5000"
+
+  

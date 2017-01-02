@@ -1,0 +1,41 @@
+version: '2'
+
+networks:
+  prodnetwork:
+    driver: bridge
+
+volumes:
+  registry-stuff:
+    driver: local
+
+services:
+  edmp-monitoring:
+    build: ./edmp-monitoring-master
+    ports:
+      - "10001:8080"
+    networks:
+      - prodnetwork
+  kafka:
+    image: spotify/kafka
+    ports:
+      - "2181:2181"
+      - "9092:9092"
+      - "7209:7209"
+    environment:
+      JMX_PORT: 7209
+      ADVERTISED_HOST: 192.168.99.100
+      ADVERTISED_PORT: 9092
+    networks:
+      - prodnetwork
+  kafka-manager:
+    image: sheepkiller/kafka-manager
+    ports:
+      - "29000:9000"
+    environment:
+      ZK_HOSTS: zk:2181
+    networks:
+      - prodnetwork
+    links:
+      - kafka:zk
+    depends_on:
+      - kafka
